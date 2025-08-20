@@ -1,11 +1,44 @@
 // LoginScreen.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import { useLanguage } from '../localization/LanguageContext';
+import { GOOGLE_CONFIG } from '../config/googleConfig';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  
+  const { language, t, toggleLanguage } = useLanguage();
+
+  useEffect(() => {
+    GoogleSignin.configure({
+      iosClientId: GOOGLE_CONFIG.iosClientId,
+      webClientId: GOOGLE_CONFIG.webClientId,
+    });
+  }, []);
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      // Here you would typically send the userInfo to your backend
+      console.log(userInfo);
+      alert(t.googleSignInSuccessful);
+      // navigation.navigate('Home');
+    } catch (error) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        alert(t.signInCancelled);
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        alert(t.signInInProgress);
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        alert(t.playServicesNotAvailable);
+      } else {
+        alert(t.somethingWentWrong + error.message);
+      }
+    }
+  };
 
   const handleLogin = async () => {
     if (email && password) {
@@ -15,27 +48,34 @@ export default function LoginScreen({ navigation }) {
           password,
         });
         if (response.data.success) {
-          alert('Login successful!');
+          alert(t.loginSuccessful);
           // navigation.navigate('Home'); // Başarılı giriş sonrası ana ekrana yönlendirme
         } else {
-          alert(response.data.message || 'Login failed');
+          alert(response.data.message || t.loginFailed);
         }
       } catch (error) {
-        alert('Error: ' + (error.response?.data?.message || error.message));
+        alert(t.error + (error.response?.data?.message || error.message));
       }
     } else {
-      alert('Please enter email and password');
+      alert(t.pleaseEnterEmailPassword);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      {/* Language Selector */}
+      <TouchableOpacity style={styles.languageSelector} onPress={toggleLanguage}>
+        <Text style={styles.languageText}>
+          {language === 'en' ? 'EN | TR' : 'TR | EN'}
+        </Text>
+      </TouchableOpacity>
+
+      <Text style={styles.title}>{t.login}</Text>
       <Image source={require('../../assets/illustration.png')} style={styles.illustration} />
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder={t.email}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -43,22 +83,31 @@ export default function LoginScreen({ navigation }) {
         />
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder={t.password}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
         />
       </View>
       <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-        <Text style={styles.loginButtonText}>LOGIN →</Text>
+        <Text style={styles.loginButtonText}>{t.loginButton}</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
+        <Image 
+          source={require('../../assets/google_logo.png')} 
+          style={styles.googleLogo} 
+        />
+        <Text style={styles.googleButtonText}>{t.signInWithGoogle}</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity>
-        <Text style={styles.forgotPassword}>Forgot Password?</Text>
+        <Text style={styles.forgotPassword}>{t.forgotPassword}</Text>
       </TouchableOpacity>
       <View style={styles.signupContainer}>
-        <Text style={styles.signupText}>Don't have account? </Text>
+        <Text style={styles.signupText}>{t.dontHaveAccount}</Text>
         <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-          <Text style={styles.signupLink}>Sign Up</Text>
+          <Text style={styles.signupLink}>{t.signUp}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -114,6 +163,28 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  googleButton: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 48,
+    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  googleLogo: {
+    width: 20,
+    height: 20,
+    marginRight: 8,
+    resizeMode: 'contain',
+  },
+  googleButtonText: {
+    color: '#222',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   forgotPassword: {
     color: '#222',
     textDecorationLine: 'underline',
@@ -132,5 +203,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textDecorationLine: 'underline',
     fontSize: 15,
+  },
+  languageSelector: {
+    position: 'absolute',
+    top: 60,
+    right: 24,
+    zIndex: 1,
+  },
+  languageText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#222',
   },
 });

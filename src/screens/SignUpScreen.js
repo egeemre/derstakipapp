@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { useLanguage } from '../localization/LanguageContext';
 
 export default function SignUpScreen({ navigation }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [dob, setDob] = useState('');
+  
+  const { language, t, toggleLanguage } = useLanguage();
 
   const handleSignUp = async () => {
     if (name && email && password && dob) {
@@ -18,37 +21,40 @@ export default function SignUpScreen({ navigation }) {
           dob,
         });
         if (response.data.success) {
-          alert('Sign up successful!');
+          alert(t.signUpSuccessful);
           navigation.navigate('Login');
         } else {
-          alert(response.data.message || 'Sign up failed');
+          alert(response.data.message || t.signUpFailed);
         }
       } catch (error) {
-        alert('Error: ' + (error.response?.data?.message || error.message));
+        alert(t.error + (error.response?.data?.message || error.message));
       }
     } else {
-      alert('Please fill all fields');
+      alert(t.pleaseFillAllFields);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
-      <Text style={styles.subtitle}>
-        Already registered?{' '}
-        <Text style={styles.signInLink} onPress={() => navigation.navigate('Login')}>Sign in</Text>
-      </Text>
+      {/* Language Selector */}
+      <TouchableOpacity style={styles.languageSelector} onPress={toggleLanguage}>
+        <Text style={styles.languageText}>
+          {language === 'en' ? 'EN | TR' : 'TR | EN'}
+        </Text>
+      </TouchableOpacity>
+
+      <Text style={styles.title}>{t.signUpTitle}</Text>
       <Image source={require('../../assets/signup_illustration.png')} style={styles.illustration} />
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Name"
+          placeholder={t.name}
           value={name}
           onChangeText={setName}
         />
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder={t.email}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -56,21 +62,29 @@ export default function SignUpScreen({ navigation }) {
         />
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder={t.password}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
         />
         <TextInput
           style={styles.input}
-          placeholder="Date of Birth"
+          placeholder={t.dateOfBirth}
           value={dob}
           onChangeText={setDob}
         />
       </View>
       <TouchableOpacity style={styles.signupButton} onPress={handleSignUp}>
-        <Text style={styles.signupButtonText}>SIGN UP →</Text>
+        <Text style={styles.signupButtonText}>{t.signUpButton}</Text>
       </TouchableOpacity>
+      
+      {/* Already have account text below sign up button */}
+      <View style={styles.signInContainer}>
+        <Text style={styles.signInText}>{t.alreadyRegistered}</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <Text style={styles.signInLink}>{t.signIn}</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -134,5 +148,31 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  languageSelector: {
+    position: 'absolute',
+    top: 60,
+    right: 24,
+    zIndex: 1,
+  },
+  languageText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#222',
+  },
+  signInContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  signInText: {
+    color: '#222',
+    fontSize: 15,
+  },
+  signInLink: {
+    color: '#222',
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+    fontSize: 15,
   },
 });
