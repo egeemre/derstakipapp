@@ -1,10 +1,32 @@
 // LoginScreen.js
 import React, { useState } from 'react';
+import axios from 'axios';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const handleLogin = async () => {
+    if (email && password) {
+      try {
+        const response = await axios.post('http://localhost:3000/login', {
+          email,
+          password,
+        });
+        if (response.data.success) {
+          alert('Login successful!');
+          // navigation.navigate('Home'); // Başarılı giriş sonrası ana ekrana yönlendirme
+        } else {
+          alert(response.data.message || 'Login failed');
+        }
+      } catch (error) {
+        alert('Error: ' + (error.response?.data?.message || error.message));
+      }
+    } else {
+      alert('Please enter email and password');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -27,7 +49,7 @@ export default function LoginScreen({ navigation }) {
           secureTextEntry
         />
       </View>
-      <TouchableOpacity style={styles.loginButton}>
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
         <Text style={styles.loginButtonText}>LOGIN →</Text>
       </TouchableOpacity>
       <TouchableOpacity>

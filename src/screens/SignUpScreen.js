@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
 
 export default function SignUpScreen({ navigation }) {
@@ -6,6 +7,29 @@ export default function SignUpScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [dob, setDob] = useState('');
+
+  const handleSignUp = async () => {
+    if (name && email && password && dob) {
+      try {
+        const response = await axios.post('http://localhost:3000/signup', {
+          name,
+          email,
+          password,
+          dob,
+        });
+        if (response.data.success) {
+          alert('Sign up successful!');
+          navigation.navigate('Login');
+        } else {
+          alert(response.data.message || 'Sign up failed');
+        }
+      } catch (error) {
+        alert('Error: ' + (error.response?.data?.message || error.message));
+      }
+    } else {
+      alert('Please fill all fields');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -44,7 +68,7 @@ export default function SignUpScreen({ navigation }) {
           onChangeText={setDob}
         />
       </View>
-      <TouchableOpacity style={styles.signupButton}>
+      <TouchableOpacity style={styles.signupButton} onPress={handleSignUp}>
         <Text style={styles.signupButtonText}>SIGN UP →</Text>
       </TouchableOpacity>
     </View>
