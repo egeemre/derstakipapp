@@ -2,32 +2,56 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { useLanguage } from '../localization/LanguageContext';
+import { useUser } from '../context/UserContext';
 
 export default function SignUpScreen({ navigation }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [dob, setDob] = useState('');
   
   const { language, t, toggleLanguage } = useLanguage();
+  const { updateUser, storeUserCredentials } = useUser();
 
   const handleSignUp = async () => {
-    if (name && email && password && dob) {
+    if (name && email && password) {
       try {
+        // Since there's no backend, we'll simulate a successful signup
+        // Store the credentials locally
+        await storeUserCredentials(email, password);
+        
+        // Store user data in context
+        const userData = {
+          name: name,
+          email: email,
+          loginMethod: 'signup'
+        };
+        
+        await updateUser(userData);
+        alert(t.signUpSuccessful);
+        navigation.navigate('Home');
+        
+        // If you want to add real backend later, uncomment this:
+        /*
         const response = await axios.post('http://localhost:3000/signup', {
           name,
           email,
           password,
-          dob,
         });
         if (response.data.success) {
+          await updateUser({
+            name: name,
+            email: email,
+            loginMethod: 'signup'
+          });
           alert(t.signUpSuccessful);
-          navigation.navigate('Login');
+          navigation.navigate('Home');
         } else {
           alert(response.data.message || t.signUpFailed);
         }
+        */
       } catch (error) {
-        alert(t.error + (error.response?.data?.message || error.message));
+        console.log('SignUp error:', error);
+        alert(t.error + error.message);
       }
     } else {
       alert(t.pleaseFillAllFields);
@@ -66,12 +90,6 @@ export default function SignUpScreen({ navigation }) {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
-        />
-        <TextInput
-          style={styles.input}
-          placeholder={t.dateOfBirth}
-          value={dob}
-          onChangeText={setDob}
         />
       </View>
       <TouchableOpacity style={styles.signupButton} onPress={handleSignUp}>

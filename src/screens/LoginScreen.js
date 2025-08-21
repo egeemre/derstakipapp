@@ -4,6 +4,7 @@ import axios from 'axios';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import { useLanguage } from '../localization/LanguageContext';
+import { useUser } from '../context/UserContext';
 import { GOOGLE_CONFIG } from '../config/googleConfig';
 
 export default function LoginScreen({ navigation }) {
@@ -11,6 +12,7 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
   
   const { language, t, toggleLanguage } = useLanguage();
+  const { updateUser, storeUserCredentials, user, isLoading } = useUser();
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -19,15 +21,32 @@ export default function LoginScreen({ navigation }) {
     });
   }, []);
 
+  // Auto-navigate if user is already logged in
+  useEffect(() => {
+    if (!isLoading && user) {
+      navigation.navigate('Home');
+    }
+  }, [user, isLoading]);
+
   const handleGoogleSignIn = async () => {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
-      // Here you would typically send the userInfo to your backend
-      console.log(userInfo);
+      
+      // Store user data in context
+      const userData = {
+        name: userInfo.user.name,
+        email: userInfo.user.email,
+        photo: userInfo.user.photo,
+        loginMethod: 'google'
+      };
+      
+      await updateUser(userData);
+      console.log('Google Sign-In successful:', userInfo);
       alert(t.googleSignInSuccessful);
-      // navigation.navigate('Home');
+      navigation.navigate('Home');
     } catch (error) {
+      console.log('Google Sign-In Error:', error);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         alert(t.signInCancelled);
       } else if (error.code === statusCodes.IN_PROGRESS) {
@@ -43,18 +62,38 @@ export default function LoginScreen({ navigation }) {
   const handleLogin = async () => {
     if (email && password) {
       try {
+        // Since there's no backend, we'll simulate a successful login
+        // Store the credentials locally
+        await storeUserCredentials(email, password);
+        
+        // Create user data from the login form
+        const userData = {
+          name: email.split('@')[0], // Use email prefix as name
+          email: email,
+          loginMethod: 'manual'
+        };
+        
+        await updateUser(userData);
+        alert(t.loginSuccessful);
+        navigation.navigate('Home');
+        
+        // If you want to add real backend later, uncomment this:
+        /*
         const response = await axios.post('http://localhost:3000/login', {
           email,
           password,
         });
         if (response.data.success) {
+          await updateUser(response.data.user);
           alert(t.loginSuccessful);
-          // navigation.navigate('Home'); // Başarılı giriş sonrası ana ekrana yönlendirme
+          navigation.navigate('Home');
         } else {
           alert(response.data.message || t.loginFailed);
         }
+        */
       } catch (error) {
-        alert(t.error + (error.response?.data?.message || error.message));
+        console.log('Login error:', error);
+        alert(t.error + error.message);
       }
     } else {
       alert(t.pleaseEnterEmailPassword);
