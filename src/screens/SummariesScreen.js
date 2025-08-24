@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { useLanguage } from '../localization/LanguageContext';
 
 export default function SummariesScreen({ navigation }) {
@@ -16,7 +16,7 @@ export default function SummariesScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Icon name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.title}>{t.summaries}</Text>
         <View style={{ width: 24 }} />
@@ -27,7 +27,7 @@ export default function SummariesScreen({ navigation }) {
         {summaries.map((summary) => (
           <TouchableOpacity key={summary.id} style={styles.summaryItem}>
             <View style={styles.summaryIcon}>
-              <Ionicons name="reader" size={24} color="#000" />
+              <Icon name="reader" size={24} color="#000" />
             </View>
             <View style={styles.summaryInfo}>
               <Text style={styles.summaryTitle}>{summary.title}</Text>
@@ -38,7 +38,7 @@ export default function SummariesScreen({ navigation }) {
               </View>
             </View>
             <TouchableOpacity style={styles.viewButton}>
-              <Ionicons name="eye-outline" size={20} color="#000" />
+              <Icon name="eye-outline" size={20} color="#000" />
             </TouchableOpacity>
           </TouchableOpacity>
         ))}

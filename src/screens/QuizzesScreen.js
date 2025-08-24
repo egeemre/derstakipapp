@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { useLanguage } from '../localization/LanguageContext';
 
 export default function QuizzesScreen({ navigation }) {
@@ -16,11 +16,11 @@ export default function QuizzesScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Icon name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.title}>{t.quizzes}</Text>
         <TouchableOpacity>
-          <Ionicons name="add" size={24} color="#000" />
+          <Icon name="add" size={24} color="#000" />
         </TouchableOpacity>
       </View>
 
@@ -29,7 +29,7 @@ export default function QuizzesScreen({ navigation }) {
         {quizzes.map((quiz) => (
           <TouchableOpacity key={quiz.id} style={styles.quizItem}>
             <View style={styles.quizIcon}>
-              <Ionicons name="help-circle" size={24} color="#000" />
+              <Icon name="help-circle" size={24} color="#000" />
             </View>
             <View style={styles.quizInfo}>
               <Text style={styles.quizTitle}>{quiz.title}</Text>
@@ -40,9 +40,9 @@ export default function QuizzesScreen({ navigation }) {
             </View>
             <View style={styles.quizStatus}>
               {quiz.completed ? (
-                <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
+                <Icon name="checkmark-circle" size={24} color="#4CAF50" />
               ) : (
-                <Ionicons name="play-circle" size={24} color="#000" />
+                <Icon name="play-circle" size={24} color="#000" />
               )}
             </View>
           </TouchableOpacity>

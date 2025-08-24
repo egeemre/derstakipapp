@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { useLanguage } from '../localization/LanguageContext';
 
 export default function TaskManagerScreen({ navigation }) {
@@ -10,14 +10,14 @@ export default function TaskManagerScreen({ navigation }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Icon name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.title}>{t.taskManager}</Text>
         <View style={{ width: 24 }} />
       </View>
       
       <View style={styles.content}>
-        <Ionicons name="checkbox" size={100} color="#e5e5e5" />
+        <Icon name="checkbox" size={100} color="#e5e5e5" />
         <Text style={styles.comingSoon}>Coming Soon</Text>
       </View>
     </View>

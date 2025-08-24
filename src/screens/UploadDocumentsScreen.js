@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { useLanguage } from '../localization/LanguageContext';
 
 export default function UploadDocumentsScreen({ navigation }) {
@@ -40,7 +40,7 @@ export default function UploadDocumentsScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Icon name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.title}>{t.uploadDocuments}</Text>
         <View style={{ width: 24 }} />
@@ -48,7 +48,7 @@ export default function UploadDocumentsScreen({ navigation }) {
 
       {/* Add New Button */}
       <TouchableOpacity style={styles.addButton} onPress={handleAddDocument}>
-        <Ionicons name="add" size={24} color="#fff" />
+        <Icon name="add" size={24} color="#fff" />
         <Text style={styles.addButtonText}>{t.addNew}</Text>
       </TouchableOpacity>
 
@@ -57,7 +57,7 @@ export default function UploadDocumentsScreen({ navigation }) {
         {documents.map((doc) => (
           <View key={doc.id} style={styles.documentItem}>
             <View style={styles.documentIcon}>
-              <Ionicons name="document-text" size={24} color="#000" />
+              <Icon name="document-text" size={24} color="#000" />
             </View>
             <View style={styles.documentInfo}>
               <Text style={styles.documentName}>{doc.name}</Text>
@@ -71,7 +71,7 @@ export default function UploadDocumentsScreen({ navigation }) {
               style={styles.deleteButton}
               onPress={() => handleDeleteDocument(doc.id)}
             >
-              <Ionicons name="trash-outline" size={20} color="#ff6b6b" />
+              <Icon name="trash-outline" size={20} color="#ff6b6b" />
             </TouchableOpacity>
           </View>
         ))}

@@ -17,6 +17,9 @@ import SummariesScreen from './src/screens/SummariesScreen';
 import UploadDocumentsScreen from './src/screens/UploadDocumentsScreen';
 import FileViewerScreen from './src/screens/FileViewerScreen';
 import LanguageSelectionScreen from './src/screens/LanguageSelectionScreen';
+import StatisticsScreen from './src/screens/StatisticsScreen';
+import AchievementsScreen from './src/screens/AchievementsScreen';
+import ToDoListScreen from './src/screens/ToDoListScreen';
 import { LanguageProvider } from './src/localization/LanguageContext';
 import { UserProvider } from './src/context/UserContext';
 import { ThemeProvider } from './src/theme/ThemeContext';
@@ -108,6 +111,21 @@ export default function App() {
               <Stack.Screen
                 name="FileViewer"
                 component={FileViewerScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="Statistics"
+                component={StatisticsScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="Achievements"
+                component={AchievementsScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="ToDoList"
+                component={ToDoListScreen}
                 options={{ headerShown: false }}
               />
             </Stack.Navigator>

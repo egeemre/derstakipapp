@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, Modal } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { useLanguage } from '../localization/LanguageContext';
 
 export default function NotesScreen({ navigation }) {
@@ -33,11 +33,11 @@ export default function NotesScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Icon name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.title}>{t.notes}</Text>
         <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Ionicons name="add" size={24} color="#000" />
+          <Icon name="add" size={24} color="#000" />
         </TouchableOpacity>
       </View>
 
@@ -62,7 +62,7 @@ export default function NotesScreen({ navigation }) {
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <Ionicons name="close" size={24} color="#000" />
+              <Icon name="close" size={24} color="#000" />
             </TouchableOpacity>
             <Text style={styles.modalTitle}>New Note</Text>
             <TouchableOpacity onPress={addNote}>

@@ -31,10 +31,14 @@ const HomeScreen = React.memo(({ navigation }) => {
 
   const formatDate = (d) => {
     try {
-      const locale = language === 'tr' ? 'tr-TR' : 'en-US';
-      return new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+      // Use dd/mm/yyyy format for all languages except English
+      if (language === 'en') {
+        return d.toLocaleDateString('en-US'); // mm/dd/yyyy for English
+      } else {
+        return d.toLocaleDateString('en-GB'); // dd/mm/yyyy for all others
+      }
     } catch (e) {
-      return `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
+      return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
     }
   };
 
@@ -43,8 +47,8 @@ const HomeScreen = React.memo(({ navigation }) => {
     { id: 2, name: t.voiceRecorder, icon: 'mic-outline', screen: 'VoiceRecorder' },
     { id: 3, name: t.taskManager, icon: 'checkbox-outline', screen: 'TaskManager' },
     { id: 4, name: t.studyPlan, icon: 'calendar-outline', screen: 'StudyPlan' },
-    { id: 5, name: t.flashcards, icon: 'layers-outline', screen: 'Flashcards' },
-    { id: 6, name: t.calculator, icon: 'calculator-outline', screen: 'Calculator' },
+    { id: 5, name: t.calculator, icon: 'calculator-outline', screen: 'Calculator' },
+    { id: 6, name: t.statistics, icon: 'stats-chart-outline', screen: 'Statistics' },
   ], [t]);
 
   const formattedLastFiles = useMemo(() => 
@@ -249,6 +253,36 @@ const HomeScreen = React.memo(({ navigation }) => {
               <Icon name="cloud-upload-outline" size={32} color={theme.colors.text} />
               <Text style={[styles.featureText, { color: theme.colors.text }]}>{t.uploadDocuments}</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.featureCard}
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate('Flashcards')}
+            >
+              <LinearGradient 
+                colors={theme.name === 'dark' ? ['#2a2d32', '#1f2328'] : ['#ececec', '#ffffff']} 
+                start={{x:0,y:0}} 
+                end={{x:1,y:1}} 
+                style={StyleSheet.absoluteFill} 
+              />
+              <Icon name="layers-outline" size={32} color={theme.colors.text} />
+              <Text style={[styles.featureText, { color: theme.colors.text }]}>{t.flashcards}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.featureCard}
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate('ToDoList')}
+            >
+              <LinearGradient 
+                colors={theme.name === 'dark' ? ['#2a2d32', '#1f2328'] : ['#ececec', '#ffffff']} 
+                start={{x:0,y:0}} 
+                end={{x:1,y:1}} 
+                style={StyleSheet.absoluteFill} 
+              />
+              <Icon name="list-outline" size={32} color={theme.colors.text} />
+              <Text style={[styles.featureText, { color: theme.colors.text }]}>{t.toDoList}</Text>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.lastFilesSection}>
@@ -328,6 +362,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerButton: {
+    marginRight: 16,
+  },
   counterContainer: {
     marginBottom: 24,
   },
@@ -390,6 +431,7 @@ const styles = StyleSheet.create({
   toolsDropdownMenu: {
     overflow: 'hidden',
     marginTop: 8,
+    borderRadius: 16,
   },
   toolsMenuContent: {
     borderRadius: 16,
