@@ -28,6 +28,9 @@ export const tr = {
   uploadDocuments: 'Doküman Yükle',
   lastFiles: 'Son Dosyalar',
   addNew: 'Yeni Ekle',
+  seeAll: 'Tümünü gör',
+  noRecentFiles: 'Henüz son dosya yok',
+  noRecentFilesSubtext: 'Bir doküman yükleyerek başlayın',
   
   // Tools
   pomodoroTimer: 'Pomodoro Zamanlayıcı',

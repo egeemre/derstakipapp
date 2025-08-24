@@ -28,6 +28,9 @@ export const en = {
   uploadDocuments: 'Upload Documents',
   lastFiles: 'Last Files',
   addNew: 'Add New',
+  seeAll: 'See all',
+  noRecentFiles: 'No recent files yet',
+  noRecentFilesSubtext: 'Start by uploading a document',
   
   // Tools
   pomodoroTimer: 'Pomodoro Timer',

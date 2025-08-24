@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useLanguage } from '../localization/LanguageContext';
 
-export default function PomodoroTimerScreen({ navigation }) {
+const PomodoroTimerScreen = React.memo(({ navigation }) => {
   const { t } = useLanguage();
   const [workTime, setWorkTime] = useState(25);
   const [restTime, setRestTime] = useState(5);
@@ -27,36 +27,42 @@ export default function PomodoroTimerScreen({ navigation }) {
     return () => clearInterval(interval);
   }, [isRunning, currentTime, workTime, restTime, isWorkSession]);
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+  // Memoize formatted time to avoid recalculation on every render
+  const formattedTime = useMemo(() => {
+    const mins = Math.floor(currentTime / 60);
+    const secs = currentTime % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+  }, [currentTime]);
 
-  const startTimer = () => {
+  // Use useCallback for timer controls
+  const startTimer = useCallback(() => {
     if (isConfiguring) {
       setCurrentTime(workTime * 60);
       setIsConfiguring(false);
     }
     setIsRunning(true);
-  };
+  }, [isConfiguring, workTime]);
 
-  const pauseTimer = () => {
+  const pauseTimer = useCallback(() => {
     setIsRunning(false);
-  };
+  }, []);
 
-  const resetTimer = () => {
+  const resetTimer = useCallback(() => {
     setIsRunning(false);
     setIsWorkSession(true);
     setCurrentTime(workTime * 60);
     setIsConfiguring(true);
-  };
+  }, [workTime]);
+
+  const handleGoBack = useCallback(() => {
+    navigation.goBack();
+  }, [navigation]);
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={handleGoBack}>
           <Icon name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.title}>{t.pomodoroTimer}</Text>
@@ -68,7 +74,7 @@ export default function PomodoroTimerScreen({ navigation }) {
         <Text style={styles.sessionType}>
           {isWorkSession ? t.workTime : t.restTime}
         </Text>
-        <Text style={styles.timerDisplay}>{formatTime(currentTime)}</Text>
+        <Text style={styles.timerDisplay}>{formattedTime}</Text>
       </View>
 
       {/* Configuration */}
@@ -123,7 +129,7 @@ export default function PomodoroTimerScreen({ navigation }) {
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -238,3 +244,5 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 });
+
+export default PomodoroTimerScreen;

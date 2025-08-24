@@ -1,15 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useLanguage } from '../localization/LanguageContext';
+import { useTheme } from '../theme/ThemeContext';
 
-export default function FileViewerScreen({ navigation, route }) {
-  const { t } = useLanguage();
+const FileViewerScreen = React.memo(({ navigation, route }) => {
+  const { t, language } = useLanguage();
+  const { theme } = useTheme();
   const { file } = route.params;
   const [selectedText, setSelectedText] = useState('');
   const [highlights, setHighlights] = useState([]);
 
-  // Sample file content based on file name
+  // Memoize formatted date to avoid recalculation
+  const formattedDate = useMemo(() => {
+    try {
+      const locale = language === 'tr' ? 'tr-TR' : 'en-US';
+      return new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(file.date);
+    } catch (e) {
+      return `${file.date.getDate()}.${file.date.getMonth() + 1}.${file.date.getFullYear()}`;
+    }
+  }, [file.date, language]);
+
   const getFileContent = (fileName) => {
     switch (fileName.toLowerCase()) {
       case 'biology':
@@ -18,63 +29,95 @@ export default function FileViewerScreen({ navigation, route }) {
 Life is a characteristic that distinguishes living organisms from non-living matter. All living things share certain fundamental characteristics:
 
 1. Cellular Organization
-All living things are composed of one or more cells. The cell is the basic unit of life. Single-celled organisms like bacteria exist as individual cells, while complex organisms like humans are made up of trillions of cells working together.
+All living things are composed of one or more cells. The cell is the basic unit of life and the smallest unit that can be considered truly alive.
 
 2. Metabolism
-Living organisms carry out chemical reactions to maintain life. These reactions include breaking down nutrients for energy (catabolism) and building complex molecules (anabolism).
+Living organisms carry out chemical reactions to maintain life. This includes processes like respiration, digestion, and photosynthesis.
 
 3. Growth and Development
-All living things grow and develop according to specific instructions coded in their DNA. This growth involves an increase in size and often complexity.
+Living things grow by increasing in size and often become more complex through development.
 
 4. Reproduction
-Living organisms can produce offspring, either sexually or asexually, ensuring the continuation of their species.
+Living organisms have the ability to reproduce and pass genetic information to their offspring.
 
 5. Response to Environment
-All living things can detect and respond to changes in their environment. This ability to respond is crucial for survival.
+Living things can sense and respond to changes in their environment through various mechanisms.
 
 6. Homeostasis
-Living organisms maintain stable internal conditions despite changes in their external environment.
+Living organisms maintain internal balance despite changes in their external environment.
 
 7. Evolution
-Over time, populations of living organisms change through the process of evolution, which allows them to adapt to their environment.`;
+Living things evolve over time through genetic changes that can be passed to future generations.
+
+Classification of Life:
+- Domain Bacteria: Single-celled prokaryotes
+- Domain Archaea: Single-celled prokaryotes in extreme environments
+- Domain Eukarya: Organisms with membrane-bound nuclei
+
+The study of biology helps us understand the complexity and diversity of life on Earth, from the smallest bacteria to the largest mammals.`;
 
       case 'what is life?':
-        return `What is Life? - A Philosophical Perspective
+        return `What is Life? - A Philosophical and Scientific Perspective
 
-This fundamental question has puzzled philosophers and scientists for centuries. From a biological standpoint, life can be defined by several key characteristics, but the deeper question remains: what makes something truly "alive"?
+This fundamental question has puzzled humanity for centuries. From a scientific standpoint, life can be defined by several key characteristics, but the boundaries remain surprisingly fuzzy.
 
-The question of life touches on consciousness, purpose, and meaning. While we can describe the mechanisms of life, understanding its essence requires us to consider both scientific and philosophical perspectives.`;
+Scientific Definition:
+Life is typically characterized by:
+• Organization (cellular structure)
+• Metabolism (energy processing)
+• Growth and reproduction
+• Response to stimuli
+• Adaptation through evolution
+
+Philosophical Perspectives:
+Different philosophical traditions have approached this question in various ways:
+
+1. Vitalism: The idea that living things possess a special "life force"
+2. Mechanism: Life as complex chemical and physical processes
+3. Emergentism: Life as emergent properties from complex systems
+
+Modern Challenges:
+• Viruses: Are they alive or not?
+• Artificial life: Can machines be considered alive?
+• Extremophiles: Life in impossible conditions
+
+The question "What is life?" continues to evolve as our understanding of biology, consciousness, and the universe expands.`;
 
       case 'math formulas':
-        return `Essential Math Formulas
+        return `Essential Mathematical Formulas
 
 Algebra:
 • Quadratic Formula: x = (-b ± √(b² - 4ac)) / 2a
-• Slope of a line: m = (y₂ - y₁) / (x₂ - x₁)
-• Distance Formula: d = √((x₂-x₁)² + (y₂-y₁)²)
+• Slope Formula: m = (y₂ - y₁) / (x₂ - x₁)
+• Distance Formula: d = √((x₂ - x₁)² + (y₂ - y₁)²)
 
 Geometry:
-• Area of circle: A = πr²
-• Circumference: C = 2πr
-• Area of triangle: A = ½bh
+• Area of Circle: A = πr²
+• Area of Triangle: A = ½bh
 • Pythagorean Theorem: a² + b² = c²
+• Volume of Sphere: V = (4/3)πr³
+
+Trigonometry:
+• sin²θ + cos²θ = 1
+• Law of Sines: a/sin(A) = b/sin(B) = c/sin(C)
+• Law of Cosines: c² = a² + b² - 2ab cos(C)
 
 Calculus:
-• Derivative of xⁿ: d/dx(xⁿ) = nxⁿ⁻¹
-• Integral of xⁿ: ∫xⁿdx = xⁿ⁺¹/(n+1) + C
-• Chain Rule: d/dx[f(g(x))] = f'(g(x)) · g'(x)
+• Power Rule: d/dx(xⁿ) = nxⁿ⁻¹
+• Product Rule: d/dx(uv) = u'v + uv'
+• Chain Rule: d/dx(f(g(x))) = f'(g(x)) · g'(x)
 
 Statistics:
-• Mean: x̄ = Σx/n
-• Standard Deviation: σ = √(Σ(x-μ)²/N)
-• Probability: P(A) = Number of favorable outcomes / Total outcomes`;
+• Mean: x̄ = (Σx) / n
+• Standard Deviation: σ = √(Σ(x - x̄)² / n)
+• Normal Distribution: f(x) = (1/σ√(2π)) · e^(-½((x-μ)/σ)²)`;
 
       case 'physics formulas':
-        return `Physics Formulas
+        return `Essential Physics Formulas
 
 Mechanics:
-• Force: F = ma
-• Kinetic Energy: KE = ½mv²
+• Newton's Laws: F = ma
+• Kinematic Equations: v = u + at, s = ut + ½at²
 • Potential Energy: PE = mgh
 • Momentum: p = mv
 • Work: W = Fd cosθ
@@ -103,7 +146,13 @@ This file viewer supports various document types and provides a clean reading ex
     }
   };
 
-  const handleTextSelection = () => {
+  // Memoize file content to avoid regeneration
+  const fileContent = useMemo(() => {
+    return getFileContent(file.name);
+  }, [file.name]);
+
+  // Use useCallback for event handlers
+  const handleTextSelection = useCallback(() => {
     Alert.alert(
       'Highlight Text',
       'Would you like to highlight the selected text?',
@@ -113,63 +162,86 @@ This file viewer supports various document types and provides a clean reading ex
           text: 'Highlight',
           onPress: () => {
             if (selectedText) {
-              setHighlights([...highlights, selectedText]);
+              setHighlights(prev => [...prev, selectedText]);
               Alert.alert('Success', 'Text highlighted successfully!');
             }
           }
         }
       ]
     );
-  };
+  }, [selectedText]);
+
+  const handleSelectionChange = useCallback((event) => {
+    const { nativeEvent } = event;
+    if (nativeEvent.selection) {
+      const start = nativeEvent.selection.start;
+      const end = nativeEvent.selection.end;
+      const selected = fileContent.substring(start, end);
+      setSelectedText(selected);
+    }
+  }, [fileContent]);
+
+  const handleGoBack = useCallback(() => {
+    navigation.goBack();
+  }, [navigation]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back" size={24} color="#000" />
+      <View style={[styles.header, { borderBottomColor: theme.colors.border }]}>
+        <TouchableOpacity onPress={handleGoBack}>
+          <Icon name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={styles.title} numberOfLines={1}>{file.name}</Text>
+        <Text style={[styles.title, { color: theme.colors.text }]} numberOfLines={1}>{file.name}</Text>
         <TouchableOpacity onPress={handleTextSelection}>
-          <Icon name="color-palette-outline" size={24} color="#000" />
+          <Icon name="brush-outline" size={24} color={theme.colors.text} />
         </TouchableOpacity>
       </View>
 
       {/* File info */}
-      <View style={styles.fileInfo}>
-        <Text style={styles.fileInfoText}>
-          {file.size} • {file.pages} pages • {file.date}
+      <View style={[styles.fileInfo, { backgroundColor: theme.colors.surfaceAlt }]}>
+        <Text style={[styles.fileInfoText, { color: theme.colors.textSecondary }]}>
+          {file.size} • {file.pages} {t.pages} • {formattedDate}
         </Text>
       </View>
 
       {/* Document content */}
       <ScrollView style={styles.contentContainer} showsVerticalScrollIndicator={false}>
         <Text 
-          style={styles.documentText}
+          style={[styles.documentText, { color: theme.colors.text }]}
           selectable={true}
-          onSelectionChange={(event) => {
-            const { nativeEvent } = event;
-            if (nativeEvent.selection) {
-              const start = nativeEvent.selection.start;
-              const end = nativeEvent.selection.end;
-              const content = getFileContent(file.name);
-              const selected = content.substring(start, end);
-              setSelectedText(selected);
-            }
-          }}
+          selectTextOnFocus={true}
+          onSelectionChange={handleSelectionChange}
         >
-          {getFileContent(file.name)}
+          {fileContent}
         </Text>
       </ScrollView>
 
+      {/* Add debug info for simulator testing */}
+      {__DEV__ && (
+        <View style={[styles.debugPanel, { backgroundColor: theme.colors.surfaceAlt, borderTopColor: theme.colors.border }]}>
+          <Text style={[styles.debugText, { color: theme.colors.textSecondary }]}>
+            Debug: Selected text length: {selectedText.length}
+          </Text>
+          {selectedText.length > 0 && (
+            <TouchableOpacity 
+              style={[styles.debugButton, { backgroundColor: theme.colors.accent }]} 
+              onPress={handleTextSelection}
+            >
+              <Text style={[styles.debugButtonText, { color: '#fff' }]}>Highlight Selected Text</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+
       {/* Highlight panel */}
       {highlights.length > 0 && (
-        <View style={styles.highlightPanel}>
-          <Text style={styles.highlightTitle}>Highlights ({highlights.length})</Text>
+        <View style={[styles.highlightPanel, { backgroundColor: theme.colors.accent + '20', borderTopColor: theme.colors.border }]}>
+          <Text style={[styles.highlightTitle, { color: theme.colors.text }]}>Highlights ({highlights.length})</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {highlights.map((highlight, index) => (
-              <View key={index} style={styles.highlightItem}>
-                <Text style={styles.highlightText} numberOfLines={2}>
+              <View key={index} style={[styles.highlightItem, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+                <Text style={[styles.highlightText, { color: theme.colors.text }]} numberOfLines={2}>
                   {highlight.substring(0, 50)}...
                 </Text>
               </View>
@@ -179,30 +251,29 @@ This file viewer supports various document types and provides a clean reading ex
       )}
 
       {/* Action buttons */}
-      <View style={styles.actionButtons}>
+      <View style={[styles.actionButtons, { borderTopColor: theme.colors.border, backgroundColor: theme.colors.surfaceAlt }]}>
         <TouchableOpacity style={styles.actionButton}>
-          <Icon name="bookmark-outline" size={20} color="#666" />
-          <Text style={styles.actionButtonText}>Bookmark</Text>
+          <Icon name="bookmark-outline" size={20} color={theme.colors.textSecondary} />
+          <Text style={[styles.actionButtonText, { color: theme.colors.textSecondary }]}>Bookmark</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.actionButton}>
-          <Icon name="share-outline" size={20} color="#666" />
-          <Text style={styles.actionButtonText}>Share</Text>
+          <Icon name="share-outline" size={20} color={theme.colors.textSecondary} />
+          <Text style={[styles.actionButtonText, { color: theme.colors.textSecondary }]}>Share</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.actionButton}>
-          <Icon name="download-outline" size={20} color="#666" />
-          <Text style={styles.actionButtonText}>Download</Text>
+          <Icon name="download-outline" size={20} color={theme.colors.textSecondary} />
+          <Text style={[styles.actionButtonText, { color: theme.colors.textSecondary }]}>Download</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -212,12 +283,10 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#000',
     flex: 1,
     textAlign: 'center',
     marginHorizontal: 16,
@@ -225,11 +294,9 @@ const styles = StyleSheet.create({
   fileInfo: {
     paddingHorizontal: 24,
     paddingVertical: 12,
-    backgroundColor: '#f8f8f8',
   },
   fileInfoText: {
     fontSize: 12,
-    color: '#666',
     textAlign: 'center',
   },
   contentContainer: {
@@ -240,35 +307,28 @@ const styles = StyleSheet.create({
   documentText: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#333',
     textAlign: 'justify',
   },
   highlightPanel: {
-    backgroundColor: '#fff3cd',
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderTopWidth: 1,
-    borderTopColor: '#e5e5e5',
   },
   highlightTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#856404',
     marginBottom: 8,
   },
   highlightItem: {
-    backgroundColor: '#fff',
     padding: 8,
     marginRight: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#f0e68c',
     minWidth: 120,
     maxWidth: 150,
   },
   highlightText: {
     fontSize: 12,
-    color: '#333',
   },
   actionButtons: {
     flexDirection: 'row',
@@ -276,8 +336,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderTopWidth: 1,
-    borderTopColor: '#e5e5e5',
-    backgroundColor: '#f8f8f8',
   },
   actionButton: {
     alignItems: 'center',
@@ -285,7 +343,27 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     fontSize: 12,
-    color: '#666',
     marginTop: 4,
   },
+  debugPanel: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderTopWidth: 1,
+  },
+  debugText: {
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  debugButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  debugButtonText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
 });
+
+export default FileViewerScreen;

@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Switch, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useLanguage } from '../localization/LanguageContext';
 import { useUser } from '../context/UserContext';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { useTheme } from '../theme/ThemeContext';
 
 export default function SettingsScreen({ navigation }) {
   const { language, t, toggleLanguage } = useLanguage();
   const { user, clearUser } = useUser();
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { themeName, toggleTheme, theme } = useTheme();
 
   const handleLogout = () => {
     Alert.alert(
@@ -42,22 +43,22 @@ export default function SettingsScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back" size={24} color="#000" />
+          <Icon name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={styles.title}>{t.settings}</Text>
+        <Text style={[styles.title, { color: theme.colors.text }]}>{t.settings}</Text>
         <View style={{ width: 24 }} />
       </View>
 
       {/* User Info */}
       {user && (
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>{user.name}</Text>
-          <Text style={styles.userEmail}>{user.email}</Text>
-          <Text style={styles.loginMethod}>
+        <View style={[styles.userInfo, { backgroundColor: theme.colors.surfaceAlt }]}>
+          <Text style={[styles.userName, { color: theme.colors.text }]}>{user.name}</Text>
+          <Text style={[styles.userEmail, { color: theme.colors.textSecondary }]}>{user.email}</Text>
+          <Text style={[styles.loginMethod, { color: theme.colors.textSecondary }]}>
             {user.loginMethod === 'google' ? 'Google Account' : 'Local Account'}
           </Text>
         </View>
@@ -66,42 +67,53 @@ export default function SettingsScreen({ navigation }) {
       {/* Settings Options */}
       <View style={styles.settingsContainer}>
         {/* Language Setting */}
-        <View style={styles.settingItem}>
+        <TouchableOpacity 
+          style={[styles.settingItem, { borderBottomColor: theme.colors.border }]}
+          onPress={() => navigation.navigate('LanguageSelection')}
+        >
           <View style={styles.settingLeft}>
-            <Icon name="language-outline" size={24} color="#000" />
-            <Text style={styles.settingText}>{t.language}</Text>
+            <Icon name="language-outline" size={24} color={theme.colors.text} />
+            <Text style={[styles.settingText, { color: theme.colors.text }]}>{t.language}</Text>
           </View>
-          <TouchableOpacity style={styles.languageToggle} onPress={toggleLanguage}>
-            <Text style={styles.languageText}>
-              {language === 'en' ? 'EN' : 'TR'}
+          <View style={styles.languageInfo}>
+            <Text style={[styles.currentLanguage, { color: theme.colors.textSecondary }]}>
+              {language === 'en' ? 'English' : 
+               language === 'tr' ? 'Türkçe' : 
+               language === 'de' ? 'Deutsch' : 
+               language === 'es' ? 'Español' : 
+               language === 'it' ? 'Italiano' : 
+               language === 'ru' ? 'Русский' : 
+               language === 'zh' ? '中文' : 'English'}
             </Text>
-          </TouchableOpacity>
-        </View>
+            <Icon name="chevron-forward" size={20} color={theme.colors.textSecondary} />
+          </View>
+        </TouchableOpacity>
 
         {/* Theme Setting */}
-        <View style={styles.settingItem}>
+        <View style={[styles.settingItem, { borderBottomColor: theme.colors.border }]}>
           <View style={styles.settingLeft}>
-            <Icon name="moon-outline" size={24} color="#000" />
-            <Text style={styles.settingText}>{t.theme}</Text>
+            <Icon name="moon-outline" size={24} color={theme.colors.text} />
+            <Text style={[styles.settingText, { color: theme.colors.text }]}>{t.theme}</Text>
           </View>
           <View style={styles.themeContainer}>
-            <Text style={styles.themeLabel}>
-              {isDarkMode ? t.darkMode : t.lightMode}
+            <Text style={[styles.themeLabel, { color: theme.colors.textSecondary }]}>
+              {themeName === 'dark' ? t.darkMode : t.lightMode}
             </Text>
             <Switch
-              value={isDarkMode}
-              onValueChange={setIsDarkMode}
-              trackColor={{ false: '#e5e5e5', true: '#000' }}
-              thumbColor={isDarkMode ? '#fff' : '#000'}
+              value={themeName === 'dark'}
+              onValueChange={toggleTheme}
+              trackColor={{ false: '#e5e5e5', true: '#000000' }}
+              thumbColor={themeName === 'dark' ? '#ffffff' : '#000000'}
+              ios_backgroundColor="#e5e5e5"
             />
           </View>
         </View>
 
         {/* Logout Setting */}
-        <TouchableOpacity style={styles.settingItem} onPress={handleLogout}>
+        <TouchableOpacity style={[styles.settingItem, { borderBottomWidth: 0 }]} onPress={handleLogout}>
           <View style={styles.settingLeft}>
-            <Icon name="log-out-outline" size={24} color="#ff6b6b" />
-            <Text style={[styles.settingText, { color: '#ff6b6b' }]}>Logout</Text>
+            <Icon name="log-out-outline" size={24} color={theme.colors.danger} />
+            <Text style={[styles.settingText, { color: theme.colors.danger }]}>{t.logout}</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -112,7 +124,6 @@ export default function SettingsScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     paddingTop: 60,
   },
   header: {
@@ -125,10 +136,8 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#000',
   },
   userInfo: {
-    backgroundColor: '#f8f8f8',
     marginHorizontal: 24,
     padding: 20,
     borderRadius: 12,
@@ -137,17 +146,14 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#000',
     marginBottom: 4,
   },
   userEmail: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 4,
   },
   loginMethod: {
     fontSize: 12,
-    color: '#999',
   },
   settingsContainer: {
     paddingHorizontal: 24,
@@ -158,7 +164,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
   },
   settingLeft: {
     flexDirection: 'row',
@@ -167,17 +172,15 @@ const styles = StyleSheet.create({
   settingText: {
     marginLeft: 16,
     fontSize: 16,
-    color: '#000',
   },
   languageToggle: {
-    backgroundColor: '#000',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
   languageText: {
-    color: '#fff',
     fontWeight: 'bold',
+    fontSize: 14,
   },
   themeContainer: {
     flexDirection: 'row',
@@ -186,6 +189,13 @@ const styles = StyleSheet.create({
   themeLabel: {
     marginRight: 12,
     fontSize: 14,
-    color: '#666',
+  },
+  currentLanguage: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  languageInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
