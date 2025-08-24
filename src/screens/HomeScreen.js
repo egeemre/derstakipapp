@@ -12,6 +12,7 @@ export default function HomeScreen({ navigation }) {
   const [toolsVisible, setToolsVisible] = useState(false);
   const [animation] = useState(new Animated.Value(0));
   const [chevronAnimation] = useState(new Animated.Value(0));
+  const [lastFilesTitleWidth, setLastFilesTitleWidth] = useState(null); // added state for underline width
   
   // Sample last files data
   const lastFiles = [
@@ -95,20 +96,47 @@ export default function HomeScreen({ navigation }) {
               end={{x: 1, y: 0}}
               style={styles.toolsBar}
             >
+              {/* Animated icon swap between menu and close */}
+              <View style={styles.iconSwapContainer}>
+                <Animated.View
+                  style={[
+                    styles.iconLayer,
+                    {
+                      opacity: chevronAnimation.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
+                      transform: [
+                        {
+                          scale: chevronAnimation.interpolate({ inputRange: [0, 1], outputRange: [1, 0.6] }),
+                        },
+                        {
+                          rotate: chevronAnimation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }),
+                        },
+                      ],
+                    },
+                  ]}
+                >
+                  <Icon name="menu-outline" size={26} color="#fff" />
+                </Animated.View>
+                <Animated.View
+                  style={[
+                    styles.iconLayer,
+                    {
+                      opacity: chevronAnimation.interpolate({ inputRange: [0, 1], outputRange: [0, 1] }),
+                      transform: [
+                        {
+                          scale: chevronAnimation.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }),
+                        },
+                        {
+                          rotate: chevronAnimation.interpolate({ inputRange: [0, 1], outputRange: ['-90deg', '0deg'] }),
+                        },
+                      ],
+                    },
+                  ]}
+                >
+                  <Icon name="close-outline" size={26} color="#fff" />
+                </Animated.View>
+              </View>
               <Text style={styles.toolsTitle}>Tools</Text>
-              <Animated.View
-                style={{
-                  transform: [{
-                    // Flip vertically when menu opens
-                    scaleY: chevronAnimation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [1, -1],
-                    })
-                  }]
-                }}
-              >
-                <Icon name="chevron-down" size={24} color="#fff" />
-              </Animated.View>
+              {/* Removed trailing duplicate toggle icon for cleaner animated transition */}
             </LinearGradient>
           </TouchableOpacity>
 
@@ -147,56 +175,76 @@ export default function HomeScreen({ navigation }) {
         {/* Feature squares */}
         <View style={styles.featuresContainer}>
           <TouchableOpacity 
-            style={styles.featureSquare} 
+            style={styles.featureCard}
+            activeOpacity={0.85}
             onPress={() => navigation.navigate('Notes')}
           >
+            <LinearGradient colors={['#ececec', '#ffffff']} start={{x:0,y:0}} end={{x:1,y:1}} style={StyleSheet.absoluteFill} />
             <Icon name="document-text-outline" size={32} color="#000" />
             <Text style={styles.featureText}>{t.notes}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={styles.featureSquare} 
+            style={styles.featureCard}
+            activeOpacity={0.85}
             onPress={() => navigation.navigate('Quizzes')}
           >
+            <LinearGradient colors={['#ececec', '#ffffff']} start={{x:0,y:0}} end={{x:1,y:1}} style={StyleSheet.absoluteFill} />
             <Icon name="help-circle-outline" size={32} color="#000" />
             <Text style={styles.featureText}>{t.quizzes}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={styles.featureSquare} 
+            style={styles.featureCard}
+            activeOpacity={0.85}
             onPress={() => navigation.navigate('Summaries')}
           >
+            <LinearGradient colors={['#ececec', '#ffffff']} start={{x:0,y:0}} end={{x:1,y:1}} style={StyleSheet.absoluteFill} />
             <Icon name="reader-outline" size={32} color="#000" />
             <Text style={styles.featureText}>{t.summaries}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={styles.featureSquare} 
-            onPress={() => navigation.navigate('UploadDocuments')}
-          >
-            <Icon name="cloud-upload-outline" size={32} color="#000" />
-            <Text style={styles.featureText}>{t.uploadDocuments}</Text>
-          </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.featureCard}
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate('UploadDocuments')}
+            >
+              <LinearGradient colors={['#ececec', '#ffffff']} start={{x:0,y:0}} end={{x:1,y:1}} style={StyleSheet.absoluteFill} />
+              <Icon name="cloud-upload-outline" size={32} color="#000" />
+              <Text style={styles.featureText}>{t.uploadDocuments}</Text>
+            </TouchableOpacity>
         </View>
 
         {/* Last files section */}
         <View style={styles.lastFilesSection}>
-          <Text style={styles.sectionTitle}>{t.lastFiles}</Text>
-          {lastFiles.map((file) => (
-            <TouchableOpacity
-              key={file.id}
-              style={styles.fileItem}
-              onPress={() => navigation.navigate('FileViewer', { file: file })}
-            >
-              <View style={styles.fileInfo}>
-                <Text style={styles.fileName}>{file.name}</Text>
-                <Text style={styles.fileDate}>{file.date}</Text>
-              </View>
-              <View style={styles.fileStats}>
-                <Text style={styles.fileSize}>{file.size}</Text>
-                <Text style={styles.filePages}>{file.pages} {t.pages}</Text>
-              </View>
-            </TouchableOpacity>
+          <Text
+            style={styles.sectionTitle}
+            onLayout={e => setLastFilesTitleWidth(e.nativeEvent.layout.width)}
+          >
+            {t.lastFiles}
+          </Text>
+          {lastFilesTitleWidth !== null && (
+            <View style={[styles.sectionUnderline, { width: lastFilesTitleWidth }]} />
+          )}
+          {lastFiles.map((file, index) => (
+            <View key={file.id}>
+              <TouchableOpacity
+                style={styles.fileItem}
+                onPress={() => navigation.navigate('FileViewer', { file: file })}
+              >
+                <View style={styles.fileInfo}>
+                  <Text style={styles.fileName}>{file.name}</Text>
+                  <Text style={styles.fileDate}>{file.date}</Text>
+                </View>
+                <View style={styles.fileStats}>
+                  <Text style={styles.filePages}>{file.pages} {t.pages}</Text>
+                  <Text style={styles.fileSize}>{file.size}</Text>
+                </View>
+              </TouchableOpacity>
+              {index < lastFiles.length - 1 && lastFilesTitleWidth !== null && (
+                <View style={[styles.fileDivider, { width: lastFilesTitleWidth }]} />
+              )}
+            </View>
           ))}
         </View>
       </ScrollView>
@@ -268,7 +316,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 24,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start', // changed from space-between so text stays near icon
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
@@ -327,15 +375,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 32,
   },
-  featureSquare: {
+  featureCard: {
     width: '48%',
     marginBottom: 16,
-    backgroundColor: '#e5e5e5',
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 120,
+    overflow: 'hidden', // ensures gradient respects borderRadius
   },
   featureText: {
     marginTop: 8,
@@ -351,16 +399,27 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginBottom: 4, // adjusted for underline spacing
     color: '#000',
+  },
+  sectionUnderline: {
+    height: 3,
+    backgroundColor: '#000',
+    marginBottom: 6, // reduced gap before first file
+    borderRadius: 2,
+    alignSelf: 'flex-start', // keep underline exactly at text width
   },
   fileItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
+    paddingVertical: 14, // slightly tighter vertical padding
+  },
+  fileDivider: {
+    height: 1,
+    backgroundColor: '#e5e5e5',
+    marginTop: 4,
+    marginBottom: 4,
   },
   fileInfo: {
     flex: 1,
@@ -379,13 +438,31 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   fileSize: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 4,
-    color: '#000',
-  },
-  filePages: {
     fontSize: 12,
     color: '#666',
+    // normal weight below pages
+    marginBottom: 0,
+  },
+  filePages: {
+    fontSize: 14,
+    color: '#000',
+    fontWeight: '600', // bold pages on top
+    marginBottom: 4,
+  },
+  chevronContainer: {
+    marginLeft: 'auto',
+  },
+  toolsMenuIcon: {
+    marginRight: 12,
+  },
+  iconSwapContainer: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  iconLayer: {
+    position: 'absolute',
   },
 });
