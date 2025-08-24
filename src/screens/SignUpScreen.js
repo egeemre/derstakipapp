@@ -19,16 +19,9 @@ export default function SignUpScreen({ navigation }) {
         // Store the credentials locally
         await storeUserCredentials(email, password);
         
-        // Store user data in context
-        const userData = {
-          name: name,
-          email: email,
-          loginMethod: 'signup'
-        };
-        
-        await updateUser(userData);
-        alert(t.signUpSuccessful);
-        navigation.navigate('Home');
+        // Show success message and redirect to login
+        alert(t.signUpSuccessful + ' Please login with your credentials.');
+        navigation.navigate('Login');
         
         // If you want to add real backend later, uncomment this:
         /*
