@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { View, StyleSheet } from 'react-native';
 
+// Import components
+import FloatingActionButton from './src/components/FloatingActionButton';
+
 // Import all your screens
 import LoginScreen from './src/screens/LoginScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
@@ -26,6 +29,8 @@ import ToDoListScreen from './src/screens/ToDoListScreen';
 import { LanguageProvider } from './src/localization/LanguageContext';
 import { UserProvider, useUser } from './src/context/UserContext';
 import { ThemeProvider } from './src/theme/ThemeContext';
+import { DocumentsProvider } from './src/context/DocumentsContext';
+import { FoldersProvider } from './src/context/FoldersContext';
 
 function AppNavigator() {
   const [currentScreen, setCurrentScreen] = React.useState('Login');
@@ -120,9 +125,23 @@ function AppNavigator() {
     }
   };
 
+  const handleFABPress = () => {
+    // Navigate to Upload Documents when FAB is pressed with a slight delay for animation
+    if (currentScreen !== 'Login' && currentScreen !== 'SignUp') {
+      // Add a small delay to let the rotation animation complete
+      setTimeout(() => {
+        navigate('UploadDocuments');
+      }, 200);
+    }
+  };
+
   return (
     <View style={styles.app}>
       {renderScreen()}
+      {/* Show FAB only on Home screen */}
+      {currentScreen === 'Home' && (
+        <FloatingActionButton onPress={handleFABPress} />
+      )}
     </View>
   );
 }
@@ -132,7 +151,11 @@ export default function App() {
     <ThemeProvider>
       <LanguageProvider>
         <UserProvider>
-          <AppNavigator />
+          <DocumentsProvider>
+            <FoldersProvider>
+              <AppNavigator />
+            </FoldersProvider>
+          </DocumentsProvider>
         </UserProvider>
       </LanguageProvider>
     </ThemeProvider>

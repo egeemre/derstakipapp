@@ -22,7 +22,7 @@ export const en = {
   remaining: 'Remaining',
   pages: 'pages',
   tools: 'Tools',
-  notes: 'Notes',
+  notes: 'Documents',
   quizzes: 'Quizzes',
   summaries: 'Summaries',
   uploadDocuments: 'Upload Documents',

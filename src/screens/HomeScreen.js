@@ -5,11 +5,13 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useLanguage } from '../localization/LanguageContext';
 import { useUser } from '../context/UserContext';
 import { useTheme } from '../theme/ThemeContext';
+import { useDocuments } from '../context/DocumentsContext';
 
 const HomeScreen = React.memo(({ navigation }) => {
   const { t, language } = useLanguage();
   const { user } = useUser();
   const { theme } = useTheme();
+  const { documents, getRecentDocuments } = useDocuments();
   const [remainingPages, setRemainingPages] = useState(0);
   const [toolsVisible, setToolsVisible] = useState(false);
   const [animation] = useState(new Animated.Value(0));
@@ -19,12 +21,7 @@ const HomeScreen = React.memo(({ navigation }) => {
   // Configure the maximum number of files to show before "See all" link
   const MAX_FILES_DISPLAY = 3;
 
-  const lastFiles = [
-    { id: 1, name: 'biology', date: new Date(2026, 8, 10), size: '3.4 mb', pages: 4 },
-    { id: 2, name: 'what is life?', date: new Date(2026, 5, 12), size: '978 kb', pages: 1 },
-    { id: 3, name: 'math formulas', date: new Date(2026, 7, 25), size: '4.6 mb', pages: 5 },
-    { id: 4, name: 'physics formulas', date: new Date(2026, 6, 10), size: '654 kb', pages: 2 },
-  ];
+  const lastFiles = getRecentDocuments(MAX_FILES_DISPLAY);
 
   // For testing empty state, you can uncomment this line:
    //const lastFiles = [];
@@ -87,7 +84,7 @@ const HomeScreen = React.memo(({ navigation }) => {
   }, [navigation]);
 
   const handleSeeAllFiles = useCallback(() => {
-    navigation.navigate('UploadDocuments');
+    navigation.navigate('Notes');
   }, [navigation]);
 
   const menuHeight = animation.interpolate({
@@ -196,7 +193,7 @@ const HomeScreen = React.memo(({ navigation }) => {
           <View style={styles.featuresContainer}>
             <TouchableOpacity
               style={styles.featureCard}
-              activeOpacity={0.85}
+              activeOpacity={0.65}
               onPress={() => navigation.navigate('Notes')}
             >
               <LinearGradient 
@@ -206,12 +203,12 @@ const HomeScreen = React.memo(({ navigation }) => {
                 style={StyleSheet.absoluteFill} 
               />
               <Icon name="document-text-outline" size={32} color={theme.colors.text} />
-              <Text style={[styles.featureText, { color: theme.colors.text }]}>{t.notes}</Text>
+              <Text style={[styles.featureText, { color: theme.colors.text }]}>Documents</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.featureCard}
-              activeOpacity={0.85}
+              activeOpacity={0.65}
               onPress={() => navigation.navigate('Quizzes')}
             >
               <LinearGradient 
@@ -226,7 +223,7 @@ const HomeScreen = React.memo(({ navigation }) => {
 
             <TouchableOpacity
               style={styles.featureCard}
-              activeOpacity={0.85}
+              activeOpacity={0.65}
               onPress={() => navigation.navigate('Summaries')}
             >
               <LinearGradient 
@@ -239,24 +236,11 @@ const HomeScreen = React.memo(({ navigation }) => {
               <Text style={[styles.featureText, { color: theme.colors.text }]}>{t.summaries}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.featureCard}
-              activeOpacity={0.85}
-              onPress={() => navigation.navigate('UploadDocuments')}
-            >
-              <LinearGradient 
-                colors={theme.name === 'dark' ? ['#2a2d32', '#1f2328'] : ['#ececec', '#ffffff']} 
-                start={{x:0,y:0}} 
-                end={{x:1,y:1}} 
-                style={StyleSheet.absoluteFill} 
-              />
-              <Icon name="cloud-upload-outline" size={32} color={theme.colors.text} />
-              <Text style={[styles.featureText, { color: theme.colors.text }]}>{t.uploadDocuments}</Text>
-            </TouchableOpacity>
+
 
             <TouchableOpacity
               style={styles.featureCard}
-              activeOpacity={0.85}
+              activeOpacity={0.65}
               onPress={() => navigation.navigate('Flashcards')}
             >
               <LinearGradient 
@@ -271,7 +255,7 @@ const HomeScreen = React.memo(({ navigation }) => {
 
             <TouchableOpacity
               style={styles.featureCard}
-              activeOpacity={0.85}
+              activeOpacity={0.65}
               onPress={() => navigation.navigate('ToDoList')}
             >
               <LinearGradient 
