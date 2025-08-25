@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { View, StyleSheet } from 'react-native';
+
+// Import all your screens
 import LoginScreen from './src/screens/LoginScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
 import HomeScreen from './src/screens/HomeScreen';
@@ -20,118 +21,126 @@ import LanguageSelectionScreen from './src/screens/LanguageSelectionScreen';
 import StatisticsScreen from './src/screens/StatisticsScreen';
 import AchievementsScreen from './src/screens/AchievementsScreen';
 import ToDoListScreen from './src/screens/ToDoListScreen';
+
+// Import context providers
 import { LanguageProvider } from './src/localization/LanguageContext';
-import { UserProvider } from './src/context/UserContext';
+import { UserProvider, useUser } from './src/context/UserContext';
 import { ThemeProvider } from './src/theme/ThemeContext';
 
-const Stack = createNativeStackNavigator();
+function AppNavigator() {
+  const [currentScreen, setCurrentScreen] = React.useState('Login');
+  const [screenParams, setScreenParams] = React.useState({});
+  const { user, isLoading } = useUser();
+
+  // Auto-redirect to login if user is not authenticated
+  React.useEffect(() => {
+    if (!isLoading) {
+      if (!user && currentScreen !== 'Login' && currentScreen !== 'SignUp') {
+        setCurrentScreen('Login');
+      } else if (user && currentScreen === 'Login') {
+        setCurrentScreen('Home');
+      }
+    }
+  }, [user, isLoading, currentScreen]);
+
+  // Navigation function that mimics React Navigation
+  const navigate = (screenName: string, params: any = {}) => {
+    setCurrentScreen(screenName);
+    setScreenParams(params);
+  };
+
+  // Go back function
+  const goBack = () => {
+    // Simple back logic - you can enhance this with a navigation stack
+    if (currentScreen !== 'Login') {
+      setCurrentScreen('Home');
+    }
+  };
+
+  // Create navigation object that screens expect
+  const navigation = {
+    navigate,
+    goBack,
+    replace: navigate, // For replacing current screen
+    reset: (resetState: any) => {
+      // Add reset functionality for compatibility
+      if (resetState.routes && resetState.routes.length > 0) {
+        setCurrentScreen(resetState.routes[0].name);
+      }
+    },
+  };
+
+  const renderScreen = () => {
+    const screenProps = {
+      navigation,
+      route: { params: screenParams },
+    };
+
+    switch (currentScreen) {
+      case 'Login':
+        return <LoginScreen {...screenProps} />;
+      case 'SignUp':
+        return <SignUpScreen {...screenProps} />;
+      case 'Home':
+        return <HomeScreen {...screenProps} />;
+      case 'Settings':
+        return <SettingsScreen {...screenProps} />;
+      case 'LanguageSelection':
+        return <LanguageSelectionScreen {...screenProps} />;
+      case 'PomodoroTimer':
+        return <PomodoroTimerScreen {...screenProps} />;
+      case 'VoiceRecorder':
+        return <VoiceRecorderScreen {...screenProps} />;
+      case 'TaskManager':
+        return <TaskManagerScreen {...screenProps} />;
+      case 'StudyPlan':
+        return <StudyPlanScreen {...screenProps} />;
+      case 'Flashcards':
+        return <FlashcardsScreen {...screenProps} />;
+      case 'Calculator':
+        return <CalculatorScreen {...screenProps} />;
+      case 'Notes':
+        return <NotesScreen {...screenProps} />;
+      case 'Quizzes':
+        return <QuizzesScreen {...screenProps} />;
+      case 'Summaries':
+        return <SummariesScreen {...screenProps} />;
+      case 'UploadDocuments':
+        return <UploadDocumentsScreen {...screenProps} />;
+      case 'FileViewer':
+        return <FileViewerScreen {...screenProps} />;
+      case 'Statistics':
+        return <StatisticsScreen {...screenProps} />;
+      case 'Achievements':
+        return <AchievementsScreen {...screenProps} />;
+      case 'ToDoList':
+        return <ToDoListScreen {...screenProps} />;
+      default:
+        return <LoginScreen {...screenProps} />;
+    }
+  };
+
+  return (
+    <View style={styles.app}>
+      {renderScreen()}
+    </View>
+  );
+}
 
 export default function App() {
   return (
-    <UserProvider>
+    <ThemeProvider>
       <LanguageProvider>
-        <ThemeProvider>
-          <NavigationContainer>
-            <Stack.Navigator initialRouteName="Login">
-              <Stack.Screen
-                name="Login"
-                component={LoginScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="SignUp"
-                component={SignUpScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="Home"
-                component={HomeScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="Settings"
-                component={SettingsScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="LanguageSelection"
-                component={LanguageSelectionScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="PomodoroTimer"
-                component={PomodoroTimerScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="VoiceRecorder"
-                component={VoiceRecorderScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="TaskManager"
-                component={TaskManagerScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="StudyPlan"
-                component={StudyPlanScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="Flashcards"
-                component={FlashcardsScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="Calculator"
-                component={CalculatorScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="Notes"
-                component={NotesScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="Quizzes"
-                component={QuizzesScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="Summaries"
-                component={SummariesScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="UploadDocuments"
-                component={UploadDocumentsScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="FileViewer"
-                component={FileViewerScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="Statistics"
-                component={StatisticsScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="Achievements"
-                component={AchievementsScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="ToDoList"
-                component={ToDoListScreen}
-                options={{ headerShown: false }}
-              />
-            </Stack.Navigator>
-          </NavigationContainer>
-        </ThemeProvider>
+        <UserProvider>
+          <AppNavigator />
+        </UserProvider>
       </LanguageProvider>
-    </UserProvider>
+    </ThemeProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  app: {
+    flex: 1,
+  },
+});

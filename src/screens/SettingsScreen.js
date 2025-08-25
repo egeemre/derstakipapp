@@ -28,11 +28,8 @@ export default function SettingsScreen({ navigation }) {
               }
               // Clear user data from storage
               await clearUser();
-              // Navigate back to login
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-              });
+              // Navigate back to login using custom navigation
+              navigation.navigate('Login');
             } catch (error) {
               console.log('Logout error:', error);
             }

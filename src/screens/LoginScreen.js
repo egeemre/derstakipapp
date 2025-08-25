@@ -12,7 +12,7 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
   
   const { language, t, toggleLanguage } = useLanguage();
-  const { updateUser, storeUserCredentials, user, isLoading } = useUser();
+  const { updateUser, storeUserCredentials, user, isLoading, getUserCredentials } = useUser();
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -29,6 +29,11 @@ export default function LoginScreen({ navigation }) {
   }, [user, isLoading]);
 
   const handleGoogleSignIn = async () => {
+    // Temporary workaround for Google Sign-In configuration issue
+    alert('Google Sign-In is temporarily disabled. Please use email/password login or try: test@example.com with password: 123456');
+    
+    /* 
+    // Original Google Sign-In code (commented out until proper configuration)
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
@@ -57,25 +62,34 @@ export default function LoginScreen({ navigation }) {
         alert(t.somethingWentWrong + error.message);
       }
     }
+    */
   };
 
   const handleLogin = async () => {
     if (email && password) {
       try {
-        // Since there's no backend, we'll simulate a successful login
-        // Store the credentials locally
-        await storeUserCredentials(email, password);
+        // Get stored credentials to validate against
+        const storedCredentials = await getUserCredentials();
         
-        // Create user data from the login form
-        const userData = {
-          name: email.split('@')[0], // Use email prefix as name
-          email: email,
-          loginMethod: 'manual'
-        };
-        
-        await updateUser(userData);
-        alert(t.loginSuccessful);
-        navigation.navigate('Home');
+        // Check if credentials match stored ones
+        if (storedCredentials && 
+            storedCredentials.email === email && 
+            storedCredentials.password === password) {
+          
+          // Valid credentials - proceed with login
+          const userData = {
+            name: email.split('@')[0], // Use email prefix as name
+            email: email,
+            loginMethod: 'manual'
+          };
+          
+          await updateUser(userData);
+          navigation.navigate('Home');
+          
+        } else {
+          // Invalid credentials
+          alert(t.loginFailed + ': Invalid email or password');
+        }
         
         // If you want to add real backend later, uncomment this:
         /*
@@ -117,8 +131,15 @@ export default function LoginScreen({ navigation }) {
           placeholder={t.email}
           value={email}
           onChangeText={setEmail}
-          keyboardType="email-address"
+          keyboardType="default"
           autoCapitalize="none"
+          autoComplete="off"
+          autoCorrect={false}
+          spellCheck={false}
+          returnKeyType="next"
+          blurOnSubmit={false}
+          selectTextOnFocus={true}
+          enablesReturnKeyAutomatically={false}
         />
         <TextInput
           style={styles.input}
@@ -126,6 +147,11 @@ export default function LoginScreen({ navigation }) {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          autoCapitalize="none"
+          autoComplete="off"
+          autoCorrect={false}
+          spellCheck={false}
+          returnKeyType="done"
         />
       </View>
       <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
