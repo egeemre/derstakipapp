@@ -11,17 +11,40 @@ export const useFolders = () => {
 };
 
 export const FoldersProvider = ({ children }) => {
+  // Predefined pastel colors for folders
+  const pastelColors = [
+    '#FFB3BA', // Light pink
+    '#BAFFC9', // Light green
+    '#BAE1FF', // Light blue
+    '#FFFFBA', // Light yellow
+    '#FFDFBA', // Light orange
+    '#E0BBE4', // Light purple
+    '#FFB3E6', // Light magenta
+    '#B3E5FC', // Light cyan
+    '#C8E6C9', // Light mint
+    '#FFF9C4', // Light lemon
+    '#FFCDD2', // Light rose
+    '#D1C4E9', // Light lavender
+  ];
+
   const [folders, setFolders] = useState([
-    { id: 1, name: 'School', documents: [1, 2] },
-    { id: 2, name: 'Work', documents: [3] },
-    { id: 3, name: 'Personal', documents: [4] },
+    { id: 1, name: 'School', documents: [1, 2], color: pastelColors[0] },
+    { id: 2, name: 'Work', documents: [3], color: pastelColors[1] },
+    { id: 3, name: 'Personal', documents: [4], color: pastelColors[2] },
   ]);
+
+  const getNextAvailableColor = () => {
+    const usedColors = folders.map(f => f.color);
+    const availableColors = pastelColors.filter(color => !usedColors.includes(color));
+    return availableColors.length > 0 ? availableColors[0] : pastelColors[folders.length % pastelColors.length];
+  };
 
   const addFolder = (folder) => {
     const newFolder = {
       id: Date.now(),
       name: folder.name,
       documents: folder.documents || [],
+      color: folder.color || getNextAvailableColor(),
     };
     setFolders(prev => [...prev, newFolder]);
     return newFolder;
@@ -65,6 +88,14 @@ export const FoldersProvider = ({ children }) => {
     }
   };
 
+  const updateFolderColor = (folderId, color) => {
+    setFolders(prev => prev.map(folder => 
+      folder.id === folderId 
+        ? { ...folder, color }
+        : folder
+    ));
+  };
+
   const value = {
     folders,
     addFolder,
@@ -72,6 +103,8 @@ export const FoldersProvider = ({ children }) => {
     addDocumentToFolder,
     removeDocumentFromFolder,
     moveDocumentToFolder,
+    updateFolderColor,
+    pastelColors,
   };
 
   return (

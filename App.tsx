@@ -130,7 +130,7 @@ function AppNavigator() {
     if (currentScreen !== 'Login' && currentScreen !== 'SignUp') {
       // Add a small delay to let the rotation animation complete
       setTimeout(() => {
-        navigate('UploadDocuments');
+        navigate('UploadDocuments', { returnTo: 'Home' });
       }, 200);
     }
   };

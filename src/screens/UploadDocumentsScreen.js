@@ -6,16 +6,32 @@ import { useDocuments } from '../context/DocumentsContext';
 import { useTheme } from '../theme/ThemeContext';
 import { useFolders } from '../context/FoldersContext';
 
-export default function UploadDocumentsScreen({ navigation }) {
+export default function UploadDocumentsScreen({ navigation, route }) {
   const { t } = useLanguage();
   const { theme } = useTheme();
   const { documents, addDocument, deleteDocument } = useDocuments();
-  const { folders, addFolder, addDocumentToFolder } = useFolders();
+  const { folders, addFolder, addDocumentToFolder, pastelColors } = useFolders();
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [newFolderName, setNewFolderName] = useState('');
   const [showCreateNewFolder, setShowCreateNewFolder] = useState(false);
   const [pendingDocument, setPendingDocument] = useState(null);
+  const [selectedUploadColor, setSelectedUploadColor] = useState(null);
+
+  // Add helper functions to get folder information for documents
+  const getFolderForDocument = (documentId) => {
+    return folders.find(f => f.documents.includes(documentId));
+  };
+
+  const getFolderNameForDocument = (documentId) => {
+    const folder = getFolderForDocument(documentId);
+    return folder ? folder.name : null;
+  };
+
+  const getFolderColorForDocument = (documentId) => {
+    const folder = getFolderForDocument(documentId);
+    return folder ? folder.color : null;
+  };
 
   const handleAddDocument = () => {
     // Create the new document first
@@ -51,7 +67,10 @@ export default function UploadDocumentsScreen({ navigation }) {
 
     // If creating a new folder
     if (showCreateNewFolder && newFolderName.trim()) {
-      const newFolder = addFolder({ name: newFolderName.trim() });
+      const newFolder = addFolder({ 
+        name: newFolderName.trim(),
+        color: selectedUploadColor
+      });
       targetFolderId = newFolder.id;
       folderName = newFolder.name;
     } else if (targetFolderId) {
@@ -79,6 +98,7 @@ export default function UploadDocumentsScreen({ navigation }) {
     setSelectedFolder(null);
     setNewFolderName('');
     setShowCreateNewFolder(false);
+    setSelectedUploadColor(null);
 
     Alert.alert(
       'Success',
@@ -110,11 +130,20 @@ export default function UploadDocumentsScreen({ navigation }) {
     );
   };
 
+  const handleGoBack = () => {
+    const returnTo = route.params?.returnTo;
+    if (returnTo === 'Home') {
+      navigation.navigate('Home');
+    } else {
+      navigation.navigate('Notes');
+    }
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={handleGoBack}>
           <Icon name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
         <Text style={[styles.title, { color: theme.colors.text }]}>{t.uploadDocuments}</Text>
@@ -138,31 +167,43 @@ export default function UploadDocumentsScreen({ navigation }) {
         ) : (
           <>
             <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Recent Documents</Text>
-            {documents.slice(0, 3).map((doc) => (
-              <View key={doc.id} style={[styles.documentItem, { backgroundColor: theme.colors.surfaceAlt }]}>
-                <View style={[styles.documentIcon, { backgroundColor: theme.colors.surface }]}>
-                  <Icon name="document-text" size={24} color={theme.colors.text} />
-                </View>
-                <View style={styles.documentInfo}>
-                  <Text style={[styles.documentName, { color: theme.colors.text }]}>{doc.name}</Text>
-                  {doc.folderName && (
-                    <Text style={[styles.documentFolder, { color: theme.colors.primary }]}>📁 {doc.folderName}</Text>
-                  )}
-                  <Text style={[styles.documentDate, { color: theme.colors.textSecondary }]}>{doc.date ? doc.date.toLocaleDateString('en-GB') : 'Recent'}</Text>
-                  <View style={styles.documentStats}>
-                    <Text style={[styles.documentSize, { color: theme.colors.text }]}>{doc.size}</Text>
-                    <Text style={[styles.documentPages, { color: theme.colors.textSecondary }]}>{doc.pages} {t.pages}</Text>
-                  </View>
-                </View>
+            {documents.slice(0, 5).map((doc) => {
+              const folderColor = getFolderColorForDocument(doc.id);
+              const folderName = getFolderNameForDocument(doc.id);
+              return (
                 <TouchableOpacity 
-                  style={styles.deleteButton}
-                  onPress={() => handleDeleteDocument(doc.id)}
+                  key={doc.id} 
+                  style={[
+                    styles.documentItem, 
+                    { 
+                      backgroundColor: theme.colors.surfaceAlt,
+                      borderLeftWidth: folderColor ? 4 : 0,
+                      borderLeftColor: folderColor || 'transparent',
+                    }
+                  ]}
+                  onPress={() => navigation.navigate('FileViewer', { file: doc, returnTo: 'UploadDocuments' })}
                 >
-                  <Icon name="trash-outline" size={20} color="#ff6b6b" />
+                  <View style={[styles.documentIcon, { backgroundColor: theme.colors.surface }]}>
+                    <Icon name="document-text" size={24} color={theme.colors.text} />
+                  </View>
+                  <View style={styles.documentInfo}>
+                    <Text style={[styles.documentName, { color: theme.colors.text }]}>{doc.name}</Text>
+                    {folderName && (
+                      <View style={styles.folderInfoContainer}>
+                        <View style={[styles.folderColorDot, { backgroundColor: folderColor }]} />
+                        <Text style={[styles.documentFolder, { color: theme.colors.primary }]}>{folderName}</Text>
+                      </View>
+                    )}
+                    <Text style={[styles.documentDate, { color: theme.colors.textSecondary }]}>{doc.date ? doc.date.toLocaleDateString('en-GB') : 'Recent'}</Text>
+                    <View style={styles.documentStats}>
+                      <Text style={[styles.documentSize, { color: theme.colors.text }]}>{doc.size}</Text>
+                      <Text style={[styles.documentPages, { color: theme.colors.textSecondary }]}>{doc.pages} {t.pages}</Text>
+                    </View>
+                  </View>
                 </TouchableOpacity>
-              </View>
-            ))}
-            {documents.length > 3 && (
+              );
+            })}
+            {documents.length > 5 && (
               <TouchableOpacity 
                 style={styles.seeAllButton} 
                 onPress={() => navigation.navigate('Notes')}
@@ -190,16 +231,26 @@ export default function UploadDocumentsScreen({ navigation }) {
               <TouchableOpacity
                 style={[
                   styles.folderItem,
-                  selectedFolder === null && { backgroundColor: theme.colors.primary }
+                  { 
+                    backgroundColor: theme.colors.surfaceAlt,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    borderWidth: selectedFolder === null ? 2 : 0,
+                    borderColor: selectedFolder === null ? '#000' : 'transparent',
+                  }
                 ]}
                 onPress={() => handleFolderSelection(null)}
               >
+                <View style={[styles.folderColorIndicator, { backgroundColor: '#666' }]} />
                 <Text style={[
                   styles.folderName,
-                  { color: selectedFolder === null ? theme.colors.background : theme.colors.text }
+                  { color: theme.colors.text, fontWeight: selectedFolder === null ? 'bold' : '600' }
                 ]}>
                   None
                 </Text>
+                {selectedFolder === null && (
+                  <Icon name="checkmark" size={16} color={theme.colors.text} style={styles.checkIcon} />
+                )}
               </TouchableOpacity>
               
               {folders.map(folder => (
@@ -207,16 +258,26 @@ export default function UploadDocumentsScreen({ navigation }) {
                   key={folder.id}
                   style={[
                     styles.folderItem,
-                    selectedFolder === folder.id && { backgroundColor: theme.colors.primary }
+                    { 
+                      backgroundColor: theme.colors.surfaceAlt,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      borderWidth: selectedFolder === folder.id ? 2 : 0,
+                      borderColor: selectedFolder === folder.id ? '#000' : 'transparent',
+                    }
                   ]}
                   onPress={() => handleFolderSelection(folder.id)}
                 >
+                  <View style={[styles.folderColorIndicator, { backgroundColor: folder.color }]} />
                   <Text style={[
                     styles.folderName,
-                    { color: selectedFolder === folder.id ? theme.colors.background : theme.colors.text }
+                    { color: theme.colors.text, fontWeight: selectedFolder === folder.id ? 'bold' : '600' }
                   ]}>
                     {folder.name}
                   </Text>
+                  {selectedFolder === folder.id && (
+                    <Icon name="checkmark" size={16} color={theme.colors.text} style={styles.checkIcon} />
+                  )}
                 </TouchableOpacity>
               ))}
               <TouchableOpacity
@@ -228,13 +289,37 @@ export default function UploadDocumentsScreen({ navigation }) {
               </TouchableOpacity>
             </ScrollView>
             {showCreateNewFolder && (
-              <TextInput
-                style={[styles.newFolderInput, { borderColor: theme.colors.text }]}
-                placeholder="Enter folder name"
-                placeholderTextColor={theme.colors.textSecondary}
-                value={newFolderName}
-                onChangeText={setNewFolderName}
-              />
+              <>
+                <TextInput
+                  style={[styles.newFolderInput, { borderColor: theme.colors.text }]}
+                  placeholder="Enter folder name"
+                  placeholderTextColor={theme.colors.textSecondary}
+                  value={newFolderName}
+                  onChangeText={setNewFolderName}
+                />
+                
+                {/* Color Selection for Upload Modal */}
+                <View style={styles.colorSection}>
+                  <Text style={[styles.colorSectionTitle, { color: theme.colors.text }]}>Choose Color</Text>
+                  <View style={styles.colorGrid}>
+                    {pastelColors.map((color, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={[
+                          styles.colorOption,
+                          { backgroundColor: color },
+                          selectedUploadColor === color && styles.selectedColorOption
+                        ]}
+                        onPress={() => setSelectedUploadColor(color)}
+                      >
+                        {selectedUploadColor === color && (
+                          <Icon name="checkmark" size={16} color="#333" />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </>
             )}
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.modalButton} onPress={handleCancelUpload}>
@@ -414,5 +499,49 @@ const styles = StyleSheet.create({
   documentFolder: {
     fontSize: 12,
     marginBottom: 4,
+  },
+  colorSection: {
+    marginBottom: 16,
+  },
+  colorSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  colorGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  colorOption: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  selectedColorOption: {
+    borderWidth: 2,
+    borderColor: '#333',
+  },
+  folderInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  folderColorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 4,
+  },
+  folderColorIndicator: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  checkIcon: {
+    marginLeft: 8,
   },
 });

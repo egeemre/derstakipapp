@@ -10,10 +10,11 @@ export default function NotesScreen({ navigation }) {
   const { t } = useLanguage();
   const { theme } = useTheme();
   const { documents, deleteDocument } = useDocuments();
-  const { folders, addFolder, deleteFolder, moveDocumentToFolder } = useFolders();
+  const { folders, addFolder, deleteFolder, moveDocumentToFolder, pastelColors } = useFolders();
   const [currentFolder, setCurrentFolder] = useState(null);
   const [showCreateFolder, setShowCreateFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
+  const [selectedColor, setSelectedColor] = useState(null);
   
   // New states for file moving functionality
   const [showMoveModal, setShowMoveModal] = useState(false);
@@ -21,6 +22,7 @@ export default function NotesScreen({ navigation }) {
   const [selectedTargetFolder, setSelectedTargetFolder] = useState(null);
   const [showCreateNewFolderForMove, setShowCreateNewFolderForMove] = useState(false);
   const [newMovefolderName, setNewMoveFolderName] = useState('');
+  const [selectedMoveColor, setSelectedMoveColor] = useState(null);
 
   const formatDate = (date) => {
     try {
@@ -30,8 +32,40 @@ export default function NotesScreen({ navigation }) {
     }
   };
 
+  // Add this helper function to get folder name for a document
+  const getFolderNameForDocument = (documentId) => {
+    const folder = folders.find(f => f.documents.includes(documentId));
+    return folder ? folder.name : null;
+  };
+
+  // Add this helper function to get folder color for a document
+  const getFolderColorForDocument = (documentId) => {
+    const folder = folders.find(f => f.documents.includes(documentId));
+    return folder ? folder.color : null;
+  };
+
+  // Add helper function to darken a color properly
+  const darkenColor = (color, amount = 0.3) => {
+    // Remove # if present
+    const hex = color.replace('#', '');
+    
+    // Parse RGB values
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Darken each component
+    const darkenedR = Math.max(0, Math.floor(r * (1 - amount)));
+    const darkenedG = Math.max(0, Math.floor(g * (1 - amount)));
+    const darkenedB = Math.max(0, Math.floor(b * (1 - amount)));
+    
+    // Convert back to hex
+    const toHex = (n) => n.toString(16).padStart(2, '0');
+    return `#${toHex(darkenedR)}${toHex(darkenedG)}${toHex(darkenedB)}`;
+  };
+
   const handleDocumentPress = (document) => {
-    navigation.navigate('FileViewer', { file: document });
+    navigation.navigate('FileViewer', { file: document, returnTo: 'Notes' });
   };
 
   const handleDeleteDocument = (id) => {
@@ -51,8 +85,12 @@ export default function NotesScreen({ navigation }) {
 
   const handleCreateFolder = () => {
     if (newFolderName.trim()) {
-      addFolder({ name: newFolderName.trim() });
+      addFolder({ 
+        name: newFolderName.trim(),
+        color: selectedColor
+      });
       setNewFolderName('');
+      setSelectedColor(null);
       setShowCreateFolder(false);
     }
   };
@@ -113,7 +151,10 @@ export default function NotesScreen({ navigation }) {
 
     // If creating a new folder for move
     if (showCreateNewFolderForMove && newMovefolderName.trim()) {
-      const newFolder = addFolder({ name: newMovefolderName.trim() });
+      const newFolder = addFolder({ 
+        name: newMovefolderName.trim(),
+        color: selectedMoveColor
+      });
       targetFolderId = newFolder.id;
     }
 
@@ -127,6 +168,7 @@ export default function NotesScreen({ navigation }) {
     setSelectedTargetFolder(null);
     setShowCreateNewFolderForMove(false);
     setNewMoveFolderName('');
+    setSelectedMoveColor(null);
 
     const folderName = targetFolderId !== null 
       ? folders.find(f => f.id === targetFolderId)?.name || 'folder'
@@ -172,38 +214,44 @@ export default function NotesScreen({ navigation }) {
           <TouchableOpacity
             style={[
               styles.folderItem,
-              { backgroundColor: currentFolder === null ? theme.colors.primary : theme.colors.surfaceAlt }
+              { 
+                backgroundColor: theme.colors.surfaceAlt,
+                opacity: currentFolder === null ? 0.8 : 1,
+                borderWidth: currentFolder === null ? 2 : 0,
+                borderColor: currentFolder === null ? '#000' : 'transparent',
+              }
             ]}
             onPress={() => setCurrentFolder(null)}
           >
-            <Text style={[styles.folderName, { color: currentFolder === null ? theme.colors.background : theme.colors.text, marginLeft: 0 }]}>
+            <Icon name="folder-open" size={20} color="#000" />
+            <Text style={[styles.folderName, { color: '#000', fontWeight: currentFolder === null ? 'bold' : '600' }]}>
               All ({documents.length})
             </Text>
           </TouchableOpacity>
           
-          {folders.map((folder) => (
-            <TouchableOpacity
-              key={folder.id}
-              style={[
-                styles.folderItem,
-                { backgroundColor: currentFolder === folder.id ? theme.colors.primary : theme.colors.surfaceAlt }
-              ]}
-              onPress={() => setCurrentFolder(folder.id)}
-            >
-              <Icon name="folder" size={24} color={currentFolder === folder.id ? theme.colors.background : theme.colors.text} />
-              <Text style={[styles.folderName, { color: currentFolder === folder.id ? theme.colors.background : theme.colors.text }]}>
-                {folder.name} ({getDocumentsInFolder(folder.id).length})
-              </Text>
-              {currentFolder === folder.id && (
-                <TouchableOpacity
-                  style={styles.folderDeleteButton}
-                  onPress={() => handleDeleteFolder(folder.id)}
-                >
-                  <Icon name="trash-outline" size={16} color={theme.colors.background} />
-                </TouchableOpacity>
-              )}
-            </TouchableOpacity>
-          ))}
+          {folders.map((folder) => {
+            const isSelected = currentFolder === folder.id;
+            return (
+              <TouchableOpacity
+                key={folder.id}
+                style={[
+                  styles.folderItem,
+                  { 
+                    backgroundColor: folder.color,
+                    opacity: isSelected ? 0.8 : 1,
+                    borderWidth: isSelected ? 2 : 0,
+                    borderColor: isSelected ? '#000' : 'transparent',
+                  }
+                ]}
+                onPress={() => setCurrentFolder(folder.id)}
+              >
+                <Icon name="folder" size={20} color="#000" />
+                <Text style={[styles.folderName, { color: '#000', fontWeight: isSelected ? 'bold' : '600' }]}>
+                  {folder.name} ({getDocumentsInFolder(folder.id).length})
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
 
@@ -226,36 +274,46 @@ export default function NotesScreen({ navigation }) {
             </TouchableOpacity>
           </View>
         ) : (
-          getDocumentsInFolder(currentFolder).map((doc) => (
-            <View key={doc.id} style={[styles.documentItem, { backgroundColor: theme.colors.surfaceAlt }]}>
-              <TouchableOpacity 
-                style={styles.documentContent}
-                onPress={() => handleDocumentPress(doc)}
-                onLongPress={() => handleDocumentLongPress(doc)}
+          getDocumentsInFolder(currentFolder).map((doc) => {
+            const folderColor = getFolderColorForDocument(doc.id);
+            return (
+              <View 
+                key={doc.id} 
+                style={[
+                  styles.documentItem, 
+                  { 
+                    backgroundColor: theme.colors.surfaceAlt,
+                    borderLeftWidth: folderColor ? 4 : 0,
+                    borderLeftColor: folderColor || 'transparent',
+                  }
+                ]}
               >
-                <View style={[styles.documentIcon, { backgroundColor: theme.colors.surface }]}>
-                  <Icon name="document-text" size={24} color={theme.colors.text} />
-                </View>
-                <View style={styles.documentInfo}>
-                  <Text style={[styles.documentName, { color: theme.colors.text }]}>{doc.name}</Text>
-                  {doc.folderName && (
-                    <Text style={[styles.documentFolder, { color: theme.colors.primary }]}>📁 {doc.folderName}</Text>
-                  )}
-                  <Text style={[styles.documentDate, { color: theme.colors.textSecondary }]}>{formatDate(doc.date)}</Text>
-                  <View style={styles.documentStats}>
-                    <Text style={[styles.documentSize, { color: theme.colors.text }]}>{doc.size}</Text>
-                    <Text style={[styles.documentPages, { color: theme.colors.textSecondary }]}>{doc.pages} {t.pages}</Text>
+                <TouchableOpacity 
+                  style={styles.documentContent}
+                  onPress={() => handleDocumentPress(doc)}
+                  onLongPress={() => handleDocumentLongPress(doc)}
+                >
+                  <View style={[styles.documentIcon, { backgroundColor: theme.colors.surface }]}>
+                    <Icon name="document-text" size={24} color={theme.colors.text} />
                   </View>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.deleteButton}
-                onPress={() => handleDeleteDocument(doc.id)}
-              >
-                <Icon name="trash-outline" size={20} color="#ff6b6b" />
-              </TouchableOpacity>
-            </View>
-          ))
+                  <View style={styles.documentInfo}>
+                    <Text style={[styles.documentName, { color: theme.colors.text }]}>{doc.name}</Text>
+                    {getFolderNameForDocument(doc.id) && (
+                      <View style={styles.folderInfoContainer}>
+                        <View style={[styles.folderColorDot, { backgroundColor: folderColor }]} />
+                        <Text style={[styles.documentFolder, { color: theme.colors.primary }]}>{getFolderNameForDocument(doc.id)}</Text>
+                      </View>
+                    )}
+                    <Text style={[styles.documentDate, { color: theme.colors.textSecondary }]}>{formatDate(doc.date)}</Text>
+                    <View style={styles.documentStats}>
+                      <Text style={[styles.documentSize, { color: theme.colors.text }]}>{doc.size}</Text>
+                      <Text style={[styles.documentPages, { color: theme.colors.textSecondary }]}>{doc.pages} {t.pages}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            );
+          })
         )}
       </ScrollView>
 
@@ -286,6 +344,29 @@ export default function NotesScreen({ navigation }) {
               onChangeText={setNewFolderName}
               autoFocus
             />
+            
+            {/* Color Selection */}
+            <View style={styles.colorSection}>
+              <Text style={[styles.colorSectionTitle, { color: theme.colors.text }]}>Choose Color</Text>
+              <View style={styles.colorGrid}>
+                {pastelColors.map((color, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.colorOption,
+                      { backgroundColor: color },
+                      selectedColor === color && styles.selectedColorOption
+                    ]}
+                    onPress={() => setSelectedColor(color)}
+                  >
+                    {selectedColor === color && (
+                      <Icon name="checkmark" size={16} color="#333" />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: theme.colors.surfaceAlt }]}
@@ -349,18 +430,42 @@ export default function NotesScreen({ navigation }) {
               </TouchableOpacity>
             </ScrollView>
             {showCreateNewFolderForMove && (
-              <TextInput
-                style={[styles.folderInput, { 
-                  backgroundColor: theme.colors.surfaceAlt,
-                  color: theme.colors.text,
-                  borderColor: theme.colors.border
-                }]}
-                placeholder="New folder name..."
-                placeholderTextColor={theme.colors.textSecondary}
-                value={newMovefolderName}
-                onChangeText={setNewMoveFolderName}
-                autoFocus
-              />
+              <>
+                <TextInput
+                  style={[styles.folderInput, { 
+                    backgroundColor: theme.colors.surfaceAlt,
+                    color: theme.colors.text,
+                    borderColor: theme.colors.border
+                  }]}
+                  placeholder="New folder name..."
+                  placeholderTextColor={theme.colors.textSecondary}
+                  value={newMovefolderName}
+                  onChangeText={setNewMoveFolderName}
+                  autoFocus
+                />
+                
+                {/* Color Selection for Move Modal */}
+                <View style={styles.colorSection}>
+                  <Text style={[styles.colorSectionTitle, { color: theme.colors.text }]}>Choose Color</Text>
+                  <View style={styles.colorGrid}>
+                    {pastelColors.map((color, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={[
+                          styles.colorOption,
+                          { backgroundColor: color },
+                          selectedMoveColor === color && styles.selectedColorOption
+                        ]}
+                        onPress={() => setSelectedMoveColor(color)}
+                      >
+                        {selectedMoveColor === color && (
+                          <Icon name="checkmark" size={16} color="#333" />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </>
             )}
             <View style={styles.modalButtons}>
               <TouchableOpacity
@@ -559,5 +664,46 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginBottom: 4,
     fontWeight: '500',
+  },
+  colorIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  folderInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  folderColorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 4,
+  },
+  colorSection: {
+    marginBottom: 20,
+  },
+  colorSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  colorGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  colorOption: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  selectedColorOption: {
+    borderWidth: 2,
+    borderColor: '#333',
   },
 });

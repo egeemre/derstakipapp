@@ -182,8 +182,13 @@ This file viewer supports various document types and provides a clean reading ex
   }, [fileContent]);
 
   const handleGoBack = useCallback(() => {
-    navigation.goBack();
-  }, [navigation]);
+    const returnTo = route.params?.returnTo;
+    if (returnTo === 'UploadDocuments') {
+      navigation.navigate('UploadDocuments');
+    } else {
+      navigation.navigate('Notes');
+    }
+  }, [navigation, route.params]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
