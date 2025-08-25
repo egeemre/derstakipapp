@@ -22,7 +22,7 @@ export const tr = {
   remaining: 'Kalan',
   pages: 'sayfa',
   tools: 'Araçlar',
-  notes: 'Notlar',
+  notes: 'Belgeler',
   quizzes: 'Quizler',
   summaries: 'Özetler',
   uploadDocuments: 'Doküman Yükle',
